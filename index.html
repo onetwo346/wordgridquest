@@ -190,6 +190,7 @@
         let timeLeft = 120; // 2 minutes in seconds
         let timerInterval;
         let isPaused = false;
+        let foundWords = []; // List to store found words
 
         function startGame() {
             introPage.style.display = 'none';
@@ -213,9 +214,10 @@
                 }
                 grid.push(row);
             }
-            // Reset the score when generating a new grid
+            // Reset the score and found words when generating a new grid
             score = 0;
             scoreElement.textContent = score;
+            foundWords = [];
             // Clear the input box
             document.getElementById('wordInput').value = '';
         }
@@ -226,9 +228,14 @@
                 alert('Please enter a valid word.');
                 return;
             }
+            if (foundWords.includes(word)) {
+                alert('You have already found this word!');
+                return;
+            }
             if (isWordInGrid(word)) {
                 score += word.length;
                 scoreElement.textContent = score;
+                foundWords.push(word); // Add the word to the found words list
                 alert('Word found!');
             } else {
                 alert('Word not found.');
@@ -307,6 +314,7 @@
             scoreElement.textContent = score;
             isPaused = false;
             playPauseButton.textContent = 'Pause';
+            foundWords = []; // Clear the found words list
             generateGrid();
             startTimer();
         }

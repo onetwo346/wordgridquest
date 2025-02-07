@@ -226,8 +226,7 @@
                 alert('Please enter a valid word.');
                 return;
             }
-            // Basic word check logic (can be expanded)
-            if (grid.flat().join('').includes(word)) {
+            if (isWordInGrid(word)) {
                 score += word.length;
                 scoreElement.textContent = score;
                 alert('Word found!');
@@ -235,6 +234,47 @@
                 alert('Word not found.');
             }
             document.getElementById('wordInput').value = '';
+        }
+
+        function isWordInGrid(word) {
+            const rows = grid.length;
+            const cols = grid[0].length;
+
+            // Directions for 8 possible movements (horizontal, vertical, diagonal)
+            const directions = [
+                [-1, -1], [-1, 0], [-1, 1],
+                [0, -1],          [0, 1],
+                [1, -1],  [1, 0], [1, 1]
+            ];
+
+            // Depth-First Search (DFS) function to check if the word exists
+            function dfs(i, j, index) {
+                if (index === word.length) return true; // Word found
+                if (i < 0 || i >= rows || j < 0 || j >= cols || grid[i][j] !== word[index]) return false; // Out of bounds or mismatch
+
+                const temp = grid[i][j]; // Save current cell value
+                grid[i][j] = '#'; // Mark cell as visited
+
+                // Explore all 8 directions
+                for (const [dx, dy] of directions) {
+                    if (dfs(i + dx, j + dy, index + 1)) {
+                        grid[i][j] = temp; // Restore cell value
+                        return true;
+                    }
+                }
+
+                grid[i][j] = temp; // Restore cell value
+                return false;
+            }
+
+            // Iterate through the grid to find the starting point of the word
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (dfs(i, j, 0)) return true;
+                }
+            }
+
+            return false; // Word not found
         }
 
         function startTimer() {

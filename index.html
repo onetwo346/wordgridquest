@@ -77,8 +77,9 @@
             background-color: white;
             aspect-ratio: 1; /* Ensure cells are square */
         }
-        .found {
-            background-color: lightgreen;
+        .highlight {
+            background-color: lightgreen; /* Highlight color */
+            border: 2px solid darkgreen; /* Optional: Add a border for emphasis */
         }
         #wordInput {
             padding: 10px;
@@ -232,10 +233,12 @@
                 alert('You have already found this word!');
                 return;
             }
-            if (isWordInGrid(word)) {
+            const path = isWordInGrid(word);
+            if (path) {
                 score += word.length;
                 scoreElement.textContent = score;
                 foundWords.push(word); // Add the word to the found words list
+                highlightCells(path); // Highlight the cells in the grid
                 alert('Word found!');
             } else {
                 alert('Word not found.');
@@ -255,33 +258,42 @@
             ];
 
             // Depth-First Search (DFS) function to check if the word exists
-            function dfs(i, j, index) {
-                if (index === word.length) return true; // Word found
-                if (i < 0 || i >= rows || j < 0 || j >= cols || grid[i][j] !== word[index]) return false; // Out of bounds or mismatch
+            function dfs(i, j, index, path) {
+                if (index === word.length) return path; // Word found
+                if (i < 0 || i >= rows || j < 0 || j >= cols || grid[i][j] !== word[index]) return null; // Out of bounds or mismatch
 
                 const temp = grid[i][j]; // Save current cell value
                 grid[i][j] = '#'; // Mark cell as visited
 
                 // Explore all 8 directions
                 for (const [dx, dy] of directions) {
-                    if (dfs(i + dx, j + dy, index + 1)) {
+                    const result = dfs(i + dx, j + dy, index + 1, [...path, [i, j]]);
+                    if (result) {
                         grid[i][j] = temp; // Restore cell value
-                        return true;
+                        return result;
                     }
                 }
 
                 grid[i][j] = temp; // Restore cell value
-                return false;
+                return null;
             }
 
             // Iterate through the grid to find the starting point of the word
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < cols; j++) {
-                    if (dfs(i, j, 0)) return true;
+                    const path = dfs(i, j, 0, []);
+                    if (path) return path;
                 }
             }
 
-            return false; // Word not found
+            return null; // Word not found
+        }
+
+        function highlightCells(path) {
+            for (const [i, j] of path) {
+                const cell = gridElement.children[i * gridSize + j];
+                cell.classList.add('highlight');
+            }
         }
 
         function startTimer() {

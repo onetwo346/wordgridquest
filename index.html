@@ -25,7 +25,7 @@
             background: radial-gradient(circle at center, rgba(76, 175, 80, 0.3), transparent);
             padding: 20px;
             animation: fadeIn 1s ease-in;
-            overflow-y: auto; /* Enable scrolling if content overflows */
+            overflow-y: auto;
         }
         @keyframes fadeIn {
             0% { opacity: 0; }
@@ -75,7 +75,7 @@
             box-shadow: 0 0 20px #4CAF50;
             animation: glowPulse 1.5s infinite;
             transition: transform 0.3s;
-            -webkit-tap-highlight-color: transparent; /* Remove iPhone tap highlight */
+            -webkit-tap-highlight-color: transparent;
         }
         .start-button:hover {
             transform: scale(1.1);
@@ -93,14 +93,15 @@
             border-radius: 15px;
             margin: 20px;
             box-shadow: inset 0 0 50px rgba(76, 175, 80, 0.2);
-            overflow-y: auto; /* Enable scrolling if content overflows */
+            overflow-y: auto;
         }
         .grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
             gap: 4px;
             margin: 20px auto;
-            max-width: 90vw; /* Responsive width for smaller screens */
+            width: clamp(300px, 80vw, 500px); /* Dynamic sizing: min 300px, max 500px, scales with viewport */
+            max-height: 80vh; /* Prevent grid from growing too tall */
             background: rgba(255, 255, 255, 0.05);
             padding: 10px;
             border-radius: 10px;
@@ -110,13 +111,13 @@
             align-items: center;
             justify-content: center;
             border: 1px solid #4CAF50;
-            font-size: 1.3rem;
+            font-size: clamp(0.8rem, 2.5vw, 1.3rem); /* Responsive font size */
             background: #1b263b;
             aspect-ratio: 1;
             color: #e0e1dd;
             transition: background 0.3s, transform 0.2s;
             box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-            -webkit-user-select: none; /* Prevent text selection on iPhone */
+            -webkit-user-select: none;
             user-select: none;
         }
         .cell:hover {
@@ -153,7 +154,7 @@
             margin: 5px;
             color: #fff;
             transition: all 0.3s;
-            -webkit-tap-highlight-color: transparent; /* Remove iPhone tap highlight */
+            -webkit-tap-highlight-color: transparent;
         }
         #submitButton {
             background: linear-gradient(45deg, #4CAF50, #66BB6A);
@@ -218,7 +219,6 @@
             .intro-page h1, .game-page h1 { font-size: 2rem; }
             .intro-page p { font-size: 1rem; }
             .start-button { padding: 10px 30px; font-size: 1.2rem; }
-            .cell { font-size: 1rem; }
             #wordInput { font-size: 1rem; }
             #timer, #score { font-size: 1.5rem; }
         }
@@ -294,7 +294,7 @@
         function startGame() {
             introPage.style.display = 'none';
             gamePage.style.display = 'block';
-            donationSection.style.display = 'block'; // Show donation in-game
+            donationSection.style.display = 'block';
             generateGrid();
             startTimer();
         }

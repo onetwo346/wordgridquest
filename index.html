@@ -6,7 +6,7 @@
     <title>Word Grid Quest: Cosmic Edition</title>
     <style>
         body {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Open Sans', sans-serif;
             text-align: center;
             background: linear-gradient(135deg, #0d1b2a, #1b263b);
             margin: 0;
@@ -15,7 +15,27 @@
             flex-direction: column;
             min-height: 100vh;
             color: #e0e1dd;
+            overflow-x: hidden;
+            position: relative;
         }
+        
+        /* Particle effect */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
         .intro-page {
             display: flex;
             flex-direction: column;
@@ -35,16 +55,17 @@
             width: 150px;
             filter: drop-shadow(0 0 10px #4CAF50);
             margin-bottom: 20px;
-            animation: float 3s infinite ease-in-out;
+            animation: floatImage 3s infinite ease-in-out;
         }
-        @keyframes float {
+        @keyframes floatImage {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-        .intro-page h1 {
+        .intro-page h1, .game-page h1 {
             font-size: 3rem;
             text-shadow: 0 0 15px #4CAF50, 0 0 30px #2196F3;
             margin-bottom: 20px;
+            transform: perspective(500px) rotateX(5deg);
         }
         .intro-page p {
             font-size: 1.2rem;
@@ -76,9 +97,10 @@
             animation: glowPulse 1.5s infinite;
             transition: transform 0.3s;
             -webkit-tap-highlight-color: transparent;
+            transform: perspective(500px) translateZ(20px);
         }
         .start-button:hover {
-            transform: scale(1.1);
+            transform: perspective(500px) translateZ(30px) scale(1.05);
         }
         @keyframes glowPulse {
             0% { box-shadow: 0 0 20px #4CAF50; }
@@ -92,43 +114,106 @@
             background: rgba(0, 0, 0, 0.7);
             border-radius: 15px;
             margin: 20px;
-            box-shadow: inset 0 0 50px rgba(76, 175, 80, 0.2);
+            box-shadow: inset 0 0 50px rgba(76, 175, 80, 0.2), 0 10px 30px rgba(0,0,0,0.4);
             overflow-y: auto;
+            transform: perspective(1000px) rotateX(2deg);
+            backdrop-filter: blur(5px);
         }
         .grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
             gap: 4px;
             margin: 20px auto;
-            width: clamp(300px, 80vw, 500px); /* Dynamic sizing: min 300px, max 500px, scales with viewport */
-            max-height: 80vh; /* Prevent grid from growing too tall */
+            width: clamp(300px, 80vw, 500px);
+            max-height: 80vh;
             background: rgba(255, 255, 255, 0.05);
             padding: 10px;
             border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transform: perspective(800px) rotateX(5deg);
         }
         .cell {
             display: flex;
             align-items: center;
             justify-content: center;
             border: 1px solid #4CAF50;
-            font-size: clamp(0.8rem, 2.5vw, 1.3rem); /* Responsive font size */
+            font-size: clamp(0.8rem, 2.5vw, 1.3rem);
             background: #1b263b;
             aspect-ratio: 1;
             color: #e0e1dd;
-            transition: background 0.3s, transform 0.2s;
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+            transition: transform 0.3s, background 0.3s;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
             -webkit-user-select: none;
             user-select: none;
+            transform: translateZ(0);
+            animation: cellAppear 0.5s ease-out backwards;
+            cursor: pointer;
         }
+        
+        .cell.active {
+            background: rgba(76, 175, 80, 0.4);
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
+            transform: translateZ(5px) scale(1.05);
+        }
+        
+        @keyframes cellAppear {
+            0% {
+                transform: scale(0.2);
+                opacity: 0;
+            }
+            80% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
         .cell:hover {
-            transform: scale(1.1);
+            transform: translateZ(10px) scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
         }
         .highlight {
             background: linear-gradient(45deg, #4CAF50, #FF9800);
             border: 2px solid #fff;
             box-shadow: 0 0 15px #FF9800;
             color: #fff;
+            transform: translateZ(15px) scale(1.05);
+            animation: pulse 0.5s ease-in-out;
         }
+        
+        .found-word {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+            color: #fff;
+            position: relative;
+        }
+        
+        .found-word::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
+            border-radius: inherit;
+            animation: gentlePulse 4s infinite ease-in-out;
+        }
+        
+        @keyframes gentlePulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translateZ(15px) scale(1.05); }
+            50% { transform: translateZ(25px) scale(1.15); }
+        }
+        
         #wordInput {
             padding: 12px;
             font-size: 1.2rem;
@@ -139,11 +224,13 @@
             border-radius: 25px;
             background: rgba(255, 255, 255, 0.1);
             color: #fff;
-            box-shadow: 0 0 10px #2196F3;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            transform: perspective(500px) translateZ(5px);
         }
         #wordInput:focus {
             outline: none;
             box-shadow: 0 0 20px #2196F3;
+            transform: perspective(500px) translateZ(10px);
         }
         #submitButton, #newGridButton, #playPauseButton, #resetButton {
             padding: 12px 24px;
@@ -155,31 +242,34 @@
             color: #fff;
             transition: all 0.3s;
             -webkit-tap-highlight-color: transparent;
+            transform: perspective(500px) translateZ(10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         #submitButton {
             background: linear-gradient(45deg, #4CAF50, #66BB6A);
-            box-shadow: 0 0 15px #4CAF50;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
         }
         #newGridButton {
             background: linear-gradient(45deg, #FF9800, #FFB300);
-            box-shadow: 0 0 15px #FF9800;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
         }
         #playPauseButton {
             background: linear-gradient(45deg, #2196F3, #42A5F5);
-            box-shadow: 0 0 15px #2196F3;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
         }
         #resetButton {
             background: linear-gradient(45deg, #F44336, #EF5350);
-            box-shadow: 0 0 15px #F44336;
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
         }
         #submitButton:hover, #newGridButton:hover, #playPauseButton:hover, #resetButton:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 25px;
+            transform: perspective(500px) translateZ(20px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
         }
         #timer, #score {
             font-size: 1.8rem;
             margin-top: 20px;
             text-shadow: 0 0 10px #fff;
+            transform: perspective(500px) translateZ(5px);
         }
         .controls {
             margin-top: 20px;
@@ -222,31 +312,76 @@
             #wordInput { font-size: 1rem; }
             #timer, #score { font-size: 1.5rem; }
         }
+        
+        /* Found words display */
+        .word-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px auto;
+            max-width: 500px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: perspective(500px) translateZ(5px);
+        }
+        
+        .found-words-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            max-height: 100px;
+            overflow-y: auto;
+            transform: perspective(500px) translateZ(5px);
+        }
+        
+        .found-words {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .word-tag {
+            background: linear-gradient(45deg, #1b263b, #2b3a5a);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .word-tag:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            border-color: #4CAF50;
+        }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div id="particles"></div>
+
     <!-- Intro Page -->
     <div class="intro-page" id="introPage">
         <img src="word.jpg" alt="Word Grid Quest Logo">
         <h1>Word Grid Quest</h1>
         <p>
-            Welcome to <strong>Word Grid Quest: Cosmic Edition</strong>! Embark on an interstellar journey to uncover hidden words within a galactic grid. Connect adjacent letters—<strong>horizontally, vertically, or diagonally</strong>—to form words and rack up cosmic points. The longer the word, the greater your score! Beware: time warps fast, and your score will <strong>decay</strong> if you linger too long.
+            Find words in the grid by connecting letters <strong>horizontally, vertically, or diagonally</strong>. Longer words = more points!
         </p>
         <p>
-            <strong>Galactic Rules:</strong>
+            <strong>Quick Rules:</strong>
             <ul>
-                <li>Type your discovered word and hit <strong>Submit</strong>.</li>
-                <li>Score points based on word length.</li>
-                <li>Delay too long, and your score dwindles!</li>
-                <li><strong>Pause</strong> to strategize, or <strong>Reset</strong> to reboot.</li>
-                <li>Summon a <strong>New Grid</strong> for a fresh cosmic challenge.</li>
+                <li>Type words and hit <strong>Submit</strong></li>
+                <li>Score drops over time - be quick!</li>
+                <li><strong>Pause</strong> when needed or get a <strong>New Grid</strong></li>
             </ul>
         </p>
-        <p>
-            Ready to conquer the word galaxy? Engage hyperdrive now!
-        </p>
-        <button class="start-button" onclick="startGame()">Launch Adventure</button>
+        <button class="start-button" onclick="startGame()">Play Game</button>
     </div>
 
     <!-- Game Page -->
@@ -260,13 +395,21 @@
             <button id="playPauseButton" onclick="togglePlayPause()">Pause</button>
             <button id="resetButton" onclick="resetGame()">Reset</button>
         </div>
-        <p>Time Warp: <span id="timer">02:00</span></p>
-        <p>Cosmic Score: <span id="score">0</span></p>
+        <div class="word-stats">
+            <p>Time: <span id="timer">02:00</span></p>
+            <p>Score: <span id="score">0</span></p>
+            <p>Words: <span id="wordCount">0</span></p>
+        </div>
+        
+        <div class="found-words-container">
+            <h3>Found Words</h3>
+            <div class="found-words" id="foundWordsList"></div>
+        </div>
     </div>
 
     <!-- Footer with Donation (In-Game Only) -->
     <footer>
-        Designed by <strong>Kofi Fosu</strong> | Contact: <a href="mailto:comoscoderr@gmail.com">comoscoderr@gmail.com</a>
+       
         <div class="donation" id="donationSection" style="display: none;">
             Enjoying this cosmic quest? Fuel the adventure with a donation!<br>
             Tap or scan the QR code below:
@@ -290,6 +433,9 @@
         let timerInterval;
         let isPaused = false;
         let foundWords = [];
+        let activePathIndices = [];
+        let isMouseDown = false;
+        let currentWord = '';
 
         function startGame() {
             introPage.style.display = 'none';
@@ -297,6 +443,52 @@
             donationSection.style.display = 'block';
             generateGrid();
             startTimer();
+            createParticles();
+        }
+        
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            particlesContainer.innerHTML = '';
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random properties
+                const size = Math.random() * 5 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const opacity = Math.random() * 0.5 + 0.1;
+                const animDuration = Math.random() * 50 + 10;
+                
+                // Set styles
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.opacity = opacity;
+                
+                // Animation
+                particle.style.animation = `float ${animDuration}s linear infinite`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function updateFoundWordsList() {
+            const foundWordsList = document.getElementById('foundWordsList');
+            foundWordsList.innerHTML = '';
+            const wordCount = document.getElementById('wordCount');
+            wordCount.textContent = foundWords.length;
+            
+            foundWords.forEach(word => {
+                const wordTag = document.createElement('span');
+                wordTag.className = 'word-tag';
+                wordTag.textContent = word;
+                foundWordsList.appendChild(wordTag);
+            });
         }
 
         function generateGrid() {
@@ -310,16 +502,225 @@
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     cell.textContent = letter;
+                    
+                    // Add animation delay to create a wave effect
+                    cell.style.animationDelay = `${(i + j) * 0.05}s`;
+                    
+                    // Add data attributes to track position
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    
+                    // Add event listeners for highlighting
+                    cell.addEventListener('mousedown', startHighlighting);
+                    cell.addEventListener('mouseover', continueHighlighting);
+                    cell.addEventListener('mouseup', endHighlighting);
+                    cell.addEventListener('touchstart', handleTouchStart);
+                    cell.addEventListener('touchmove', handleTouchMove);
+                    cell.addEventListener('touchend', handleTouchEnd);
+                    
                     gridElement.appendChild(cell);
                 }
                 grid.push(row);
             }
+            
+            // Add event listener to document to catch mouse up outside grid
+            document.addEventListener('mouseup', endHighlighting);
+            document.addEventListener('touchend', handleTouchEnd);
+            
             score = 0;
             scoreElement.textContent = score;
             foundWords = [];
+            updateFoundWordsList();
             document.getElementById('wordInput').value = '';
         }
-
+        
+        function startHighlighting(e) {
+            if (isPaused) return;
+            isMouseDown = true;
+            clearActiveHighlights();
+            
+            const cell = e.target;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            currentWord = grid[row][col];
+            activePathIndices = [[row, col]];
+            cell.classList.add('active');
+            
+            // Update the input field with the current letter
+            document.getElementById('wordInput').value = currentWord;
+            
+            // Prevent default to avoid text selection
+            e.preventDefault();
+        }
+        
+        function continueHighlighting(e) {
+            if (!isMouseDown || isPaused) return;
+            
+            const cell = e.target;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            // Check if this is a valid next cell (adjacent to the last one)
+            const lastCell = activePathIndices[activePathIndices.length - 1];
+            const [lastRow, lastCol] = lastCell;
+            
+            // Check if cell is already in the path
+            const alreadyInPath = activePathIndices.some(([r, c]) => r === row && c === col);
+            if (alreadyInPath) {
+                // If we're back to a previous cell, truncate the path
+                const index = activePathIndices.findIndex(([r, c]) => r === row && c === col);
+                if (index >= 0) {
+                    // Remove highlights from truncated cells
+                    for (let i = activePathIndices.length - 1; i > index; i--) {
+                        const [r, c] = activePathIndices[i];
+                        const idx = r * gridSize + c;
+                        gridElement.children[idx].classList.remove('active');
+                    }
+                    // Truncate the path
+                    activePathIndices = activePathIndices.slice(0, index + 1);
+                    currentWord = activePathIndices.map(([r, c]) => grid[r][c]).join('');
+                }
+                return;
+            }
+            
+            // Check if adjacent
+            const rowDiff = Math.abs(row - lastRow);
+            const colDiff = Math.abs(col - lastCol);
+            
+            if (rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0)) {
+                // Valid next cell
+                activePathIndices.push([row, col]);
+                currentWord += grid[row][col];
+                cell.classList.add('active');
+                
+                // Update the input field with the current word
+                document.getElementById('wordInput').value = currentWord;
+            }
+        }
+        
+        function endHighlighting() {
+            if (!isMouseDown) return;
+            
+            isMouseDown = false;
+            
+            // If we have a word of length 2 or more, submit it
+            if (currentWord.length >= 2) {
+                // Keep the highlight visible briefly before checking the word
+                setTimeout(() => {
+                    document.getElementById('wordInput').value = currentWord;
+                    checkWord();
+                    clearActiveHighlights();
+                }, 100);
+            } else {
+                clearActiveHighlights();
+            }
+        }
+        
+        function clearActiveHighlights() {
+            // Clear all active highlights
+            document.querySelectorAll('.cell.active').forEach(cell => {
+                cell.classList.remove('active');
+            });
+            activePathIndices = [];
+            currentWord = '';
+        }
+        
+        // Handle touch events
+        function handleTouchStart(e) {
+            if (isPaused) return;
+            const touch = e.touches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (element && element.classList.contains('cell')) {
+                isMouseDown = true;
+                clearActiveHighlights();
+                
+                const row = parseInt(element.dataset.row);
+                const col = parseInt(element.dataset.col);
+                
+                currentWord = grid[row][col];
+                activePathIndices = [[row, col]];
+                element.classList.add('active');
+                
+                // Update the input field with the current letter
+                document.getElementById('wordInput').value = currentWord;
+            }
+            e.preventDefault(); // Prevent scrolling
+        }
+        
+        function handleTouchMove(e) {
+            if (!isMouseDown || isPaused) return;
+            const touch = e.touches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (element && element.classList.contains('cell')) {
+                const row = parseInt(element.dataset.row);
+                const col = parseInt(element.dataset.col);
+                
+                // Skip if cell doesn't have valid coordinates
+                if (isNaN(row) || isNaN(col)) return;
+                
+                // Check if this is a valid next cell (adjacent to the last one)
+                const lastCell = activePathIndices[activePathIndices.length - 1];
+                const [lastRow, lastCol] = lastCell;
+                
+                // Check if cell is already in the path
+                const alreadyInPath = activePathIndices.some(([r, c]) => r === row && c === col);
+                if (alreadyInPath) {
+                    // If we're back to a previous cell, truncate the path
+                    const index = activePathIndices.findIndex(([r, c]) => r === row && c === col);
+                    if (index >= 0) {
+                        // Remove highlights from truncated cells
+                        for (let i = activePathIndices.length - 1; i > index; i--) {
+                            const [r, c] = activePathIndices[i];
+                            const idx = r * gridSize + c;
+                            if (gridElement.children[idx]) {
+                                gridElement.children[idx].classList.remove('active');
+                            }
+                        }
+                        // Truncate the path
+                        activePathIndices = activePathIndices.slice(0, index + 1);
+                        currentWord = activePathIndices.map(([r, c]) => grid[r][c]).join('');
+                    }
+                    return;
+                }
+                
+                // Check if adjacent
+                const rowDiff = Math.abs(row - lastRow);
+                const colDiff = Math.abs(col - lastCol);
+                
+                if (rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0)) {
+                    // Valid next cell
+                    activePathIndices.push([row, col]);
+                    currentWord += grid[row][col];
+                    element.classList.add('active');
+                    
+                    // Update the input field with the current word
+                    document.getElementById('wordInput').value = currentWord;
+                }
+            }
+            e.preventDefault(); // Prevent scrolling
+        }
+        
+        function handleTouchEnd(e) {
+            if (!isMouseDown) return;
+            
+            isMouseDown = false;
+            
+            // If we have a word of length 2 or more, submit it
+            if (currentWord.length >= 2) {
+                // Keep the highlight visible briefly before checking the word
+                setTimeout(() => {
+                    document.getElementById('wordInput').value = currentWord;
+                    checkWord();
+                    clearActiveHighlights();
+                }, 100);
+            } else {
+                clearActiveHighlights();
+            }
+            
+            if (e) e.preventDefault(); // Prevent any default behavior
+        }
+        
         function checkWord() {
             const word = document.getElementById('wordInput').value.toUpperCase();
             if (word.length < 2) {
@@ -327,7 +728,7 @@
                 return;
             }
             if (foundWords.includes(word)) {
-                alert('You’ve already claimed this cosmic word!');
+                alert("You've already claimed this cosmic word!");
                 return;
             }
             const path = isWordInGrid(word);
@@ -335,6 +736,7 @@
                 score += word.length * 10;
                 scoreElement.textContent = score;
                 foundWords.push(word);
+                updateFoundWordsList();
                 highlightCells(path);
                 alert('Cosmic word discovered! + ' + (word.length * 10) + ' points');
             } else {
@@ -379,10 +781,19 @@
         }
 
         function highlightCells(path) {
+            // First, show the temporary strong highlight
             for (const [i, j] of path) {
                 const cell = gridElement.children[i * gridSize + j];
                 cell.classList.add('highlight');
-                setTimeout(() => cell.classList.remove('highlight'), 2000);
+                
+                // Store the found word's path in the cell's data attribute for reference
+                cell.dataset.inFoundWord = true;
+                
+                // After the highlight animation finishes, change to the subtle persistent highlight
+                setTimeout(() => {
+                    cell.classList.remove('highlight');
+                    cell.classList.add('found-word');
+                }, 2000);
             }
         }
 
@@ -419,6 +830,13 @@
             isPaused = false;
             playPauseButton.textContent = 'Pause';
             foundWords = [];
+            updateFoundWordsList();
+            clearActiveHighlights();
+            // Clear all highlights before generating a new grid
+            document.querySelectorAll('.found-word').forEach(cell => {
+                cell.classList.remove('found-word');
+                delete cell.dataset.inFoundWord;
+            });
             generateGrid();
             startTimer();
         }
